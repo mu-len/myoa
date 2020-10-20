@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-3.2.xsd
+            http://www.springframework.org/schema/mvc
+            http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+            http://www.springframework.org/schema/util
+            http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"></property>
+    </bean>
+
+    <bean class="org.apache.shiro.spring.web.ShiroFilterFactoryBean" name="shiroFilter">
+        <property name="securityManager" ref="securityManager"></property>
+        <property name="loginUrl" value="/login"></property>
+        <property name="successUrl" value="/main"></property>
+        <property name="unauthorizedUrl" value="/refuse.html"></property>
+        <property name="filters">
+            <map>
+                <!-- 将自定义 的FormAuthenticationFilter注入shiroFilter中-->
+                <entry key="authc" value-ref="formAuthenticationFilter" />
+            </map>
+        </property>
+        <property name="filterChainDefinitions">
+            <value>
+                <!-- 所有的静态资源要匿名访问 -->
+                /kaptch.jpg=anon
+                /bootstrap/**=anon
+                /css/**=anon
+                /js/**=anon
+                /static/**=anon
+                /apply_baoxiao.jsp=perms[baoxiao:apply]
+                /myBaoxiaoBill=perms[baoxiao:billquery]
+                /myTaskList=perms[baoxiao:tasklist]
+                /add_process.jsp=perms[baoxiao:publish]
+                /processDefinitionList=perms[baoxiao:processlist]
+                /viewImage=perms[baoxiao:viewimage]
+                /viewCurrentImage=perms[baoxiao:viewimage]
+                /viewCurrentImageByBill=perms[baoxiao:viewimage]
+                /delDeployment=perms[baoxiao:remove]
+                /findRoles=perms[baoxiao:rolelist]
+                /findUserList=perms[user:query]
+                /toAddRole=perms[user:create]
+                <!-- 退出系统 -->
+                /logout=logout
+                /**=authc
+
+            </value>
+        </property>
+    </bean>
+
+    <bean class="com.web.oa.shiro.EmployeeRealm" name="employeeRealm">
+        <property name="credentialsMatcher" ref="credentialsMatcher"></property>
+    </bean>
+
+    <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher" name="credentialsMatcher">
+        <property name="hashIterations" value="2"></property>
+        <property name="hashAlgorithmName" value="md5"></property>
+    </bean>
+
+    <bean class="org.apache.shiro.web.mgt.DefaultWebSecurityManager" name="securityManager">
+        <property name="realm" ref="employeeRealm"></property>
+    </bean>
+
+    <bean class="com.web.oa.shiro.CustomFormAuthenticationFilter" name="formAuthenticationFilter">
+        <property name="usernameParam" value="username"></property>
+        <property name="passwordParam" value="password"></property>
+
+    </bean>
+
+
+</beans>
